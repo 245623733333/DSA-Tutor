@@ -1,0 +1,5 @@
+Project: DSA Tutor
+Category: Learning & education
+Summary: DSA practice where you earn the answer. Students pick a problem (many with Indian everyday scenarios), write JavaScript or Python, and run real tests in the browser. A five-level hint ladder (Understand, Nudge, Hint, Review, Solution) unlocks help one step at a time. Features: plain-English bug nudges after failing tests, a speed check that estimates time complexity, voice hints, a topic progress map, shareable friend challenges, and an optional AI tutor (English, Hindi, Telugu, Tamil) using the BharatCode API. C++, Java and C have a practice mode with hints and AI review. Full execution for those is planned.
+Model: qwen-3.8-27b via the BharatCode API (OpenAI-compatible /chat/completions)
+Run: copy .env.example to .env, add BHARATCODE_API_KEY, then run `npm start` (Node 18+). Without a key everything works except the AI tutor.

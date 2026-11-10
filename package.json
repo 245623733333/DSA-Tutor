@@ -1,0 +1,9 @@
+{
+  "name": "dsa-tutor",
+  "version": "1.0.0",
+  "description": "A Socratic DSA tutor that teaches you to think, not just to copy. Built on the BharatCode model API.",
+  "type": "module",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

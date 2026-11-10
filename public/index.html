@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DSA Tutor</title>
+<style>
+:root{--bg:#111113;--card:#1a1a1d;--line:#2b2b30;--tx:#ececf0;--mut:#9a9aa5;--ac:#ff9f4a}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif}
+header{padding:12px 20px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h1{font-size:18px;margin:0 auto 0 0}h1 span{color:var(--ac)}h3{margin:0;font-size:15px}
+select,button,textarea,input{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit}
+button{cursor:pointer}button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cursor:not-allowed}
+button.p{background:var(--ac);color:#111;border-color:var(--ac);font-weight:600}
+main{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;padding:16px 20px;height:calc(100vh - 62px)}
+@media(max-width:850px){main{grid-template-columns:1fr;height:auto}}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.dd{position:relative}.dd>button{min-width:230px;text-align:left}
+.menu{position:absolute;right:0;top:calc(100% + 6px);min-width:320px;max-height:65vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;z-index:10;box-shadow:0 8px 24px #0008}
+.item{display:flex;gap:8px;align-items:center;padding:7px 10px;border-radius:6px;cursor:pointer}
+.item:hover,.item.cur{background:#26262b}.item small{margin-left:auto}
+.st{width:16px;text-align:center}.st.s{color:#6fd08c}.st.a{color:#5aa9ff}.st.n{color:var(--mut)}
+.Easy{color:#6fd08c}.Medium{color:var(--ac)}.Hard{color:#ff7a7a}.legend{padding:6px 10px;border-top:1px solid var(--line);margin-top:4px}
+#statement{color:var(--mut);margin:0}
+.ed{display:flex;flex:1;min-height:240px;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#gut,#code{font:13px/20px ui-monospace,Menlo,Consolas,monospace;margin:0}
+#gut{width:46px;flex:none;text-align:right;padding:10px 10px 30px 0;color:#5d5d68;background:#151518;overflow:hidden;user-select:none;white-space:pre}
+#code{flex:1;min-width:0;border:0;border-radius:0;background:transparent;resize:none;padding:10px 12px;white-space:pre;overflow:auto;outline:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#res{font:13px/1.6 ui-monospace,Menlo,monospace;max-height:170px;overflow:auto}
+#res div{white-space:pre-wrap}
+.ok{color:#6fd08c}.bad{color:#ff7a7a}.sum{font-weight:600}
+.hint{background:var(--bg);border-radius:8px;padding:8px 12px;border-left:3px solid var(--ac)}
+.hint b{color:var(--ac);font-size:12px}.hint p{margin:2px 0 6px;white-space:pre-wrap}.hint button{padding:3px 8px;font-size:12px}
+pre{margin:4px 0 0;overflow:auto;font-size:13px}
+.bar{height:6px;border-radius:3px;background:var(--line)}.bar i{display:block;height:100%;border-radius:3px;background:var(--ac)}
+.mut{color:var(--mut);font-size:13px}#stats{white-space:pre-line}
+.chat{display:flex;flex-direction:column;gap:8px;min-height:220px;max-height:50vh;overflow:auto}
+.m{padding:8px 12px;border-radius:10px;max-width:94%;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.u{align-self:flex-end;background:#2a2118}.m.a{background:#232328}
+.m code{background:#111;padding:1px 5px;border-radius:4px;font:12.5px ui-monospace,Menlo,monospace}
+.m pre{background:#111;padding:8px 10px;border-radius:6px;white-space:pre;margin:6px 0;font:12.5px/1.5 ui-monospace,Menlo,monospace}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{flex:1;padding:7px 8px;font-size:13px;white-space:nowrap}
+.tabs button.on{border-color:var(--ac);color:var(--ac)}
+.pane{display:flex;flex-direction:column;gap:10px}
+</style></head><body>
+<header><h1>DSA <span>Tutor</span></h1><span class="mut" id="stat"></span>
+<select id="clang" aria-label="Programming language"><option value="js">JavaScript</option><option value="py">Python</option><option value="cpp">C++</option><option value="java">Java (tests coming soon)</option><option value="c">C (tests coming soon)</option></select>
+<button id="share">Challenge a friend</button>
+<div class="dd"><button id="pbtn" aria-haspopup="listbox">📖 Select problem… ▾</button><div class="menu" id="plist" role="listbox" hidden></div></div></header>
+<main>
+<section><div class="hint" id="chal" hidden></div><h3 id="title"></h3><p id="statement"></p>
+<div class="ed"><div id="gut" aria-hidden="true">1</div><textarea id="code" spellcheck="false" wrap="off" aria-label="Code editor"></textarea></div>
+<div class="row"><button class="p" id="run">Run tests</button><button id="reset">Reset code</button></div>
+<div id="res"></div><div class="hint" id="nudge" hidden></div></section>
+<section>
+<div class="tabs" id="tabs"><button data-t="hints">💡 Hints</button><button data-t="stats">📊 Stats &amp; Speed</button><button data-t="topics">🗺️ Topics</button><button data-t="ai">🤖 Tutor</button></div>
+<div class="pane" data-t="hints"><div class="mut">Try first. Unlock only what you need.</div><div id="hints"></div><button id="unlock"></button></div>
+<div class="pane" data-t="stats"><div id="stats" class="mut"></div><div class="row"><h3>Speed check</h3><button id="speed">Check speed</button></div><div class="mut">Times your code on bigger and bigger inputs.</div><div id="perf"></div></div>
+<div class="pane" data-t="topics"><div id="bars"></div><div class="mut" id="suggest"></div></div>
+<div class="pane" data-t="ai"><div class="row"><span class="mut">The tutor remembers this chat for each problem.</span><select id="lang" style="margin-left:auto"><option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option></select><button id="clear">Clear chat</button></div>
+<div class="chat" id="chat"></div>
+<div class="row"><input id="q" style="flex:1;min-width:140px" placeholder="Ask anything about this problem…"><button class="p" id="ask">Ask</button></div></div>
+</section></main>
+<script>
+const $=id=>document.getElementById(id),NAMES=['Understand','Nudge','Hint','Review','Solution'],SIZES=[2000,4000,8000,16000];
+const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const LN={cpp:'C++',java:'Java',c:'C'};
+let P=[],cur=0,prog=ls.get('dsa-prog',{}),last={},chal=null,lang=ls.get('dsa-lang','js'),tab=ls.get('dsa-tab','hints'),pyW=null,pyOK=false,chats=ls.get('dsa-chats',{}),busy=false,cppOn=false;
+if(!['js','py','cpp','java','c'].includes(lang))lang='js';
+if(!['hints','stats','topics','ai'].includes(tab))tab='hints';
+const runnable=()=>lang==='js'||lang==='py'||(lang==='cpp'&&cppOn);
+const PY={
+'two-sum':`def twoSum(nums, target):
+    seen = {}
+    for i, n in enumerate(nums):
+        if target - n in seen:
+            return [seen[target - n], i]
+        seen[n] = i`,
+'valid-parens':`def isValid(s):
+    pair = {')': '(', ']': '[', '}': '{'}
+    stack = []
+    for c in s:
+        if c in pair:
+            if not stack or stack.pop() != pair[c]:
+                return False
+        else:
+            stack.append(c)
+    return not stack`,
+'binary-search':`def search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1`,
+'max-subarray':`def maxSubArray(nums):
+    cur = best = nums[0]
+    for n in nums[1:]:
+        cur = max(n, cur + n)
+        best = max(best, cur)
+    return best`,
+'anagrams':`def groupAnagrams(strs):
+    groups = {}
+    for s in strs:
+        groups.setdefault(''.join(sorted(s)), []).append(s)
+    return list(groups.values())`,
+'islands':`def numIslands(grid):
+    count = 0
+    def dfs(r, c):
+        if r < 0 or c < 0 or r >= len(grid) or c >= len(grid[0]) or grid[r][c] != '1':
+            return
+        grid[r][c] = '0'
+        dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1)
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            if grid[r][c] == '1':
+                count += 1
+                dfs(r, c)
+    return count`,
+'first-unique':`def firstUnique(skus):
+    count = {}
+    for s in skus:
+        count[s] = count.get(s, 0) + 1
+    for i, s in enumerate(skus):
+        if count[s] == 1:
+            return i
+    return -1`,
+'merge-slots':`def mergeSlots(slots):
+    out = []
+    for a, b in sorted(slots):
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return out`
+};
+const startCode=p=>lang==='py'?p.starter.replace(/function (\w+)\((.*?)\) \{[\s\S]*/,'def $1($2):\n    # your code here\n    pass'):lang==='js'?p.starter:(lang==='cpp'&&p.cpp)?p.cpp.starter:`// ${p.title}\n// Write your ${LN[lang]} solution here.\n// Function to write: ${p.fn}\n`;
+const ck=p=>(lang==='js'?'code:':'code:'+lang+':')+p.id;
+const sol=p=>lang==='js'?p.solution:lang==='py'?PY[p.id]:(lang==='cpp'&&p.cpp)?p.cpp.sol:'// Reference solution in Python. Translate it to '+LN[lang]+' yourself, which is great practice.\n// (Tests cannot run '+LN[lang]+' yet.)\n\n'+PY[p.id];
+const pr=id=>prog[id]||(prog[id]={solved:false,hints:0,runs:0});
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const line=(box,t,c)=>box.append(el('div',c,t));
+const NORM={twoSum:a=>[...a].sort((x,y)=>x-y),groupAnagrams:g=>g.map(x=>[...x].sort()).sort((a,b)=>a.join()<b.join()?-1:1)};
+const norm=(fn,v)=>{try{return JSON.stringify(NORM[fn]?NORM[fn](v):v)}catch{return JSON.stringify(v)}};
+const GEN={twoSum:n=>[Array.from({length:n},(_,i)=>i*2),n*2+1],search:n=>[Array.from({length:n},(_,i)=>i*2),-1],
+  maxSubArray:n=>[Array.from({length:n},(_,i)=>i%7-3)],isValid:n=>['()'.repeat(n>>1)],
+  groupAnagrams:n=>[Array.from({length:n>>2},(_,i)=>(i*2654435761>>>0).toString(36))],
+  firstUnique:n=>[Array.from({length:n},(_,i)=>'sku'+(i>>1))],mergeSlots:n=>[Array.from({length:n},(_,i)=>[i*3,i*3+1])]};
+const speak=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-IN';speechSynthesis.speak(u)}catch{}};
+
+function workerBody(){onmessage=e=>{const{code,fn,tests}=e.data;let out=[];
+  try{const f=new Function(code+'\nreturn '+fn+';')();
+    for(const t of tests){try{out.push({got:f(...t.args)})}catch(x){out.push({err:String(x)})}}
+  }catch(x){out=[{err:String(x)}]}postMessage(out)}}
+function perfBody(){onmessage=e=>{const{code,fn,inputs}=e.data;try{const f=new Function(code+'\nreturn '+fn+';')();f(...inputs[0]);const out=[];
+  for(const a of inputs){const t0=performance.now();let r=0,t=0;do{f(...a);r++;t=performance.now()-t0}while(t<30&&r<5000);out.push(t/r)}
+  postMessage({out})}catch(x){postMessage({err:String(x)})}}}
+function pyBody(){let py;const B='https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+  const cv=r=>{if(r&&r.toJs){const v=r.toJs({dict_converter:Object.fromEntries});r.destroy();return v}return r};
+  const msg=x=>String(x.message||x).trim().split('\n').filter(Boolean).pop();
+  onmessage=async e=>{const{mode,code,fn,tests,inputs}=e.data;
+    try{
+      if(!py){importScripts(B+'pyodide.js');py=await loadPyodide({indexURL:B})}
+      if(mode==='init')return postMessage({ready:1});
+      const ns=py.runPython('dict()');py.runPython(code,{globals:ns});
+      const f=ns.get(fn);if(!f)return postMessage({err:fn+' is not defined. Your function must be called '+fn+'.'});
+      const call=a=>cv(f(...a.map(x=>py.toPy(x))));
+      if(mode==='perf'){call(inputs[0]);const out=[];
+        for(const a of inputs){const t0=performance.now();let r=0,t=0;do{call(a);r++;t=performance.now()-t0}while(t<30&&r<200);out.push(t/r)}
+        return postMessage({out})}
+      const out=[];for(const t of tests){try{out.push({got:call(t.args)})}catch(x){out.push({err:msg(x)})}}
+      postMessage({out})
+    }catch(x){postMessage({err:msg(x)})}}}
+const mkWorker=b=>new Worker(URL.createObjectURL(new Blob(['('+b+')()'])));
+
+function runTests(code,p){return new Promise(res=>{const w=mkWorker(workerBody);
+  const done=x=>{clearTimeout(t);w.terminate();res(x)};
+  const t=setTimeout(()=>done({err:'Timed out after 2 seconds. Check for an infinite loop.'}),2000);
+  w.onmessage=e=>done(e.data.length===p.tests.length?{out:e.data}:{err:e.data[0]?.err||'Unknown error'});
+  w.onerror=()=>done({err:'Your code crashed the test runner.'});w.postMessage({code,fn:p.fn,tests:p.tests})})}
+function pyCall(msg,ms){return new Promise(res=>{
+  if(!pyW)pyW=mkWorker(pyBody);const w=pyW;
+  const kill=()=>{w.terminate();if(pyW===w)pyW=null;pyOK=false};
+  const t=setTimeout(()=>{kill();res({timeout:1})},ms);
+  w.onmessage=e=>{clearTimeout(t);res(e.data)};
+  w.onerror=()=>{clearTimeout(t);kill();res({err:'Python could not load. Check your internet connection and try again.'})};
+  w.postMessage(msg)})}
+async function ensurePy(box){if(pyOK&&pyW)return;box.textContent='Loading Python (first time only, about 10 MB)…';
+  const r=await pyCall({mode:'init'},90000);if(!r.ready)throw new Error(r.timeout?'Python took too long to load.':r.err);pyOK=true}
+async function runPy(code,p){try{await ensurePy($('res'))}catch(x){return{err:x.message}}
+  const r=await pyCall({mode:'test',code,fn:p.fn,tests:p.tests},3000);
+  return r.timeout?{err:'Timed out after 3 seconds. Check for an infinite loop.'}:r.err?{err:r.err}:{out:r.out}}
+async function runCpp(code,p){
+  try{const r=await fetch('/api/run-cpp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({problemId:p.id,code})});
+    const j=await r.json();
+    if(!r.ok||j.error)return{err:j.error||'C++ runner failed.'};
+    if(j.compileError)return{err:'Compile error:\n'+j.compileError};
+    return{out:j.out}
+  }catch{return{err:'Could not reach the C++ runner.'}}}
+
+function diagnose(l,p){
+  if(l.err){
+    if(/Timed out/.test(l.err))return 'Infinite loop suspected. Check your loop condition, and that your pointers or counters (i++, lo/hi) really change on every pass.';
+    if(l.err.includes(p.fn+' is not defined')||l.err.includes(p.fn+' is not a function'))return `Name problem: your function must be called ${p.fn}.`;
+    if(/Compile error/.test(l.err))return 'The compiler found errors. Read the first message: it names the line and the problem. Fix the first one, then run again.';
+    if(/NameError|ReferenceError|is not defined/.test(l.err))return 'A name is misspelled or was never defined. Read the error above: it names the exact word.';
+    return 'Your code did not run. Read the error above and check the line it points at.'}
+  const f=l.fail;if(!f)return '';
+  if(f.err&&/NameError|ReferenceError|is not defined/.test(f.err))return 'A name is misspelled or was never defined. Read the error above: it names the exact word. Check the spelling of your variables.';
+  if(f.err)return /undefined|null|out of range/.test(f.err)?'You are reading past the edge of an array, or from something undefined. Check index bounds (< length, not <=).':'Your code crashed on this input. Think about edge cases like empty or single-item input.';
+  const e=f.re,g=f.rg;
+  if(g===undefined||g===null)return 'Your function returned nothing for this input. Is there a return on every path?';
+  if(typeof g!==typeof e)return `Wrong type: expected a ${typeof e} but got a ${typeof g}.`;
+  if(typeof e==='boolean')return 'The answer is flipped. Check your condition and your final return.';
+  if(typeof e==='number')return g===-1?'You said "not found", but the answer exists. Check your comparison and loop range.':Math.abs(g-e)===1?'Off by one. Check loop bounds and your starting values.':'Wrong number. Trace your variables by hand on this input.';
+  if(Array.isArray(e)&&Array.isArray(g)){
+    if(g.length!==e.length)return `Expected ${e.length} items but got ${g.length}. Are you missing a case or adding extras?`;
+    if(JSON.stringify(g.map(String).sort())===JSON.stringify(e.map(String).sort()))return 'Right elements, wrong order. Check how you build the result, or sort before returning.';
+    return 'Right size, wrong values. Trace your index arithmetic on this input by hand.'}
+  return 'Different result on this input. Trace your code by hand on it.'}
+
+function review(p){
+  if(!runnable())return 'Tests cannot run for '+LN[lang]+' yet. Walk through your code on the example in the problem, then compare with the Level 5 reference, or ask the AI tutor to review it.';
+  const l=last[p.id];
+  if(!l)return 'Run your tests first, then come back to this level and I will review the result.';
+  if(l.err)return 'Your code did not run: '+l.err+'\n'+diagnose(l,p);
+  if(l.fail)return `Test ${l.fail.i+1} fails. Input: ${l.fail.args}. Expected ${l.fail.exp}, got ${l.fail.got}.\n${diagnose(l,p)}`;
+  return 'All tests pass. Target: '+p.target+'. What are the time and space complexity of your solution?'}
+
+function renderHints(){const p=P[cur],g=pr(p.id),box=$('hints');box.innerHTML='';
+  for(let i=0;i<g.hints;i++){const d=el('div','hint');d.append(el('b',null,`LEVEL ${i+1} · ${NAMES[i].toUpperCase()}`));
+    if(i===4)d.append(el('pre',null,sol(p)));
+    else{const txt=i===3?review(p):p.hints[i],b=el('button',null,'🔊 Listen');d.append(el('p',null,txt));b.onclick=()=>speak(txt);d.append(b)}box.append(d)}
+  $('unlock').textContent=g.hints<5?`Unlock Level ${g.hints+1}: ${NAMES[g.hints]}`:'All levels unlocked';$('unlock').disabled=g.hints>=5}
+
+const status=p=>{const g=pr(p.id);return g.solved?['s','✓']:(g.runs>0||g.hints>0)?['a','◐']:['n','○']};
+function renderProgress(){const T={};
+  P.forEach(p=>p.topics.forEach(t=>{(T[t]??=[0,0])[1]++;if(pr(p.id).solved)T[t][0]++}));
+  const bars=$('bars');bars.innerHTML='';
+  Object.entries(T).forEach(([t,[a,b]])=>{const r=el('div');r.append(el('div','mut',`${t}: ${a}/${b}`));
+    const bar=el('div','bar'),i=el('i');i.style.width=(a/b*100)+'%';bar.append(i);r.append(bar);bars.append(r)});
+  const un=P.filter(p=>!pr(p.id).solved),sc=p=>Math.min(...p.topics.map(t=>T[t][0]/T[t][1]));
+  un.sort((a,b)=>sc(a)-sc(b));
+  $('suggest').textContent=un.length?'Next up: '+un[0].title:'All problems solved! 🎉';
+  const solved=P.filter(p=>pr(p.id).solved).length,g=pr(P[cur].id);
+  $('stat').textContent=`Solved ${solved}/${P.length}`;
+  $('stats').textContent=`Solved overall: ${solved}/${P.length}\nThis problem: ${g.solved?'solved ✓':'not solved yet'}\nTest runs: ${g.runs}\nHints used: ${g.hints}/5`;
+  $('pbtn').textContent='📖 '+P[cur].title+' ▾';
+  const m=$('plist');m.innerHTML='';
+  P.forEach((p,i)=>{const[c,ic]=status(p),d=el('div','item'+(i===cur?' cur':''));d.setAttribute('role','option');
+    d.append(el('span','st '+c,ic),el('span',null,p.title),el('small',p.difficulty,p.difficulty));
+    d.onclick=()=>{cur=i;m.hidden=true;load()};m.append(d)});
+  m.append(el('div','legend mut','✓ solved · ◐ in progress · ○ not started'))}
+const renderAll=()=>{renderHints();renderProgress()};
+
+/* ---------- Tutor chat ---------- */
+function fmt(box,text){
+  text.split(/```/).forEach((part,i)=>{
+    if(i%2){box.append(el('pre',null,part.replace(/^[\w+-]*\n/,'').replace(/\n$/,'')));return}
+    part.split(/`([^`\n]+)`/).forEach((s,j)=>{if(!s)return;box.append(j%2?el('code',null,s):document.createTextNode(s))})})}
+function renderChat(){const box=$('chat'),h=chats[P[cur].id]||[];box.innerHTML='';
+  if(!h.length)box.append(el('div','mut','Ask a question about this problem, or paste what you are stuck on.'));
+  h.forEach(m=>{const d=el('div','m '+(m.role==='user'?'u':'a'));fmt(d,m.content);box.append(d)});
+  box.scrollTop=box.scrollHeight}
+function saveChats(){const k=Object.keys(chats);if(k.length>30)delete chats[k[0]];ls.set('dsa-chats',chats)}
+
+const gut=()=>{const n=$('code').value.split('\n').length;$('gut').textContent=Array.from({length:n},(_,i)=>i+1).join('\n');$('gut').scrollTop=$('code').scrollTop};
+function setTab(t){tab=t;ls.set('dsa-tab',t);document.querySelectorAll('.pane').forEach(e=>e.hidden=e.dataset.t!==t);
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+
+function load(){const p=P[cur];$('title').textContent=p.title+' · '+p.topics.join(', ');$('statement').textContent=p.statement;
+  $('code').value=ls.get(ck(p),startCode(p));gut();
+  $('res').textContent=runnable()?'':'Practice mode: write your solution, unlock hints, compare with the reference at Level 5, or ask the AI tutor to review it.';
+  $('run').disabled=!runnable();$('run').textContent=runnable()?'Run tests':'Tests coming soon';
+  $('perf').textContent='';$('nudge').hidden=true;renderChat();
+  const c=$('chal'),on=chal&&chal.id===p.id;c.hidden=!on;
+  c.textContent=on?(chal.hints>=5?'Challenge from a friend: can you solve this one?':`Challenge from a friend: solve this using ${chal.hints} hint${chal.hints===1?'':'s'} or fewer.`):'';renderAll()}
+
+$('run').onclick=async()=>{const p=P[cur],g=pr(p.id),box=$('res');ls.set(ck(p),$('code').value);
+  if(!runnable())return;
+  box.textContent=lang==='cpp'?'Compiling…':'Running…';$('nudge').hidden=true;
+  const r=await(lang==='py'?runPy:lang==='cpp'?runCpp:runTests)($('code').value,p);box.textContent='';g.runs++;let l;
+  if(r.err){l={err:r.err};line(box,'✗ '+r.err,'bad')}
+  else{let pass=0;
+    r.out.forEach((o,i)=>{const t=p.tests[i],ok=!o.err&&norm(p.fn,o.got)===norm(p.fn,t.out);
+      if(ok)pass++;else if(!l)l={fail:{i,args:JSON.stringify(t.args),exp:JSON.stringify(t.out),got:o.err||JSON.stringify(o.got),err:o.err,re:t.out,rg:o.got}};
+      line(box,(ok?'✓':'✗')+` Test ${i+1}: ${JSON.stringify(t.args)}`+(ok?'':` → expected ${JSON.stringify(t.out)}, got ${o.err||JSON.stringify(o.got)}`),ok?'ok':'bad')});
+    l=l||{pass:true};const all=pass===p.tests.length;if(all)g.solved=true;
+    line(box,`${pass}/${p.tests.length} passed`+(all?' 🎉 Target: '+p.target:''),'sum');
+    if(all&&chal&&chal.id===p.id)line(box,g.hints<=chal.hints?'Challenge beaten! 🏆':`Solved with ${g.hints} hints (the challenge was ${chal.hints}). Try again with fewer.`,'ok')}
+  const n=diagnose(l,p);if(n){$('nudge').hidden=false;$('nudge').textContent='💡 '+n}
+  last[p.id]=l;ls.set('dsa-prog',prog);renderAll()};
+
+function showPerf(x){const box=$('perf');box.textContent='';if(x.err){box.textContent=x.err;return}
+  const m=Math.max(...x.out);
+  x.out.forEach((t,i)=>{box.append(el('div','mut',`n = ${SIZES[i]}: ${t<0.01?'<0.01':t.toFixed(2)} ms`));const b=el('div','bar'),f=el('i');f.style.width=Math.max(2,t/m*100)+'%';b.append(f);box.append(b)});
+  const fl=t=>Math.max(t,0.002),k=Math.log(fl(x.out[3])/fl(x.out[1]))/Math.log(SIZES[3]/SIZES[1]);
+  box.append(el('div','sum',k<0.4?'Time barely grows with input size: roughly O(1) or O(log n). Excellent.':k<1.4?'Time grows in proportion to input: roughly O(n) or O(n log n). Good.':'Time grows much faster than the input: roughly O(n²) or worse. Look for a nested loop or repeated scanning.'));
+  box.append(el('div','mut','Estimate only. Target for this problem: '+P[cur].target))}
+$('speed').onclick=async()=>{const p=P[cur],g=GEN[p.fn];
+  if(!runnable()||lang==='cpp'){$('perf').textContent='Speed check runs for JavaScript and Python only.';return}
+  if(!g){$('perf').textContent='Speed check is not available for this problem yet.';return}
+  if(lang==='py'){try{await ensurePy($('perf'))}catch(x){return showPerf({err:x.message})}
+    $('perf').textContent='Measuring…';
+    const r=await pyCall({mode:'perf',code:$('code').value,fn:p.fn,inputs:SIZES.map(n=>g(n))},12000);
+    return showPerf(r.timeout?{err:'Over 12 seconds: your solution grows very fast on big inputs.'}:r)}
+  $('perf').textContent='Measuring…';const w=mkWorker(perfBody);
+  const done=x=>{clearTimeout(t);w.terminate();showPerf(x)};
+  const t=setTimeout(()=>done({err:'Over 8 seconds: your solution grows very fast on big inputs.'}),8000);
+  w.onmessage=e=>done(e.data);w.onerror=()=>done({err:'Your code crashed during the speed check.'});
+  w.postMessage({code:$('code').value,fn:p.fn,inputs:SIZES.map(n=>g(n))})};
+
+$('share').onclick=()=>{const p=P[cur],g=pr(p.id),h=g.solved?g.hints:5,url=`${location.origin}${location.pathname}#c=${p.id}.${h}`;
+  const msg=g.solved?`I solved "${p.title}" using ${h} hint${h===1?'':'s'}. Can you beat me?`:`Try this DSA problem: "${p.title}"`;
+  try{navigator.clipboard?.writeText(url)}catch{}window.open('https://wa.me/?text='+encodeURIComponent(msg+' '+url),'_blank')};
+const onEdit=()=>{ls.set(ck(P[cur]),$('code').value);gut()};
+$('reset').onclick=()=>{if(confirm('Reset your code for this problem?')){$('code').value=startCode(P[cur]);onEdit()}};
+$('code').oninput=onEdit;
+$('code').onscroll=()=>{$('gut').scrollTop=$('code').scrollTop};
+$('code').onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();const t=e.target;t.setRangeText('  ',t.selectionStart,t.selectionEnd,'end');onEdit()}};
+$('unlock').onclick=()=>{const g=pr(P[cur].id);if(g.hints===4&&!confirm('Show the full solution? Try Level 4 first!'))return;g.hints++;ls.set('dsa-prog',prog);renderAll()};
+$('pbtn').onclick=e=>{e.stopPropagation();$('plist').hidden=!$('plist').hidden};
+document.onclick=e=>{if(!e.target.closest('.dd'))$('plist').hidden=true};
+document.onkeydown=e=>{if(e.key==='Escape')$('plist').hidden=true};
+$('clang').value=lang;$('clang').onchange=()=>{lang=$('clang').value;ls.set('dsa-lang',lang);load()};
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
+$('clear').onclick=()=>{if(!(chats[P[cur].id]||[]).length)return;if(confirm('Clear the tutor chat for this problem?')){delete chats[P[cur].id];saveChats();renderChat()}};
+$('q').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('ask').click()}};
+$('ask').onclick=async()=>{const q=$('q').value.trim();if(!q||busy||!P.length)return;
+  const p=P[cur],g=pr(p.id),h=chats[p.id]||(chats[p.id]=[]);
+  h.push({role:'user',content:q});$('q').value='';busy=true;$('ask').disabled=true;renderChat();
+  const wait=el('div','m a','Thinking…');$('chat').append(wait);$('chat').scrollTop=$('chat').scrollHeight;
+  let text='',err='';
+  try{
+    const r=await fetch('/api/tutor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({problemId:p.id,level:Math.max(1,g.hints),lang:$('lang').value,
+      codeLang:({js:'JavaScript',py:'Python',cpp:'C++',java:'Java',c:'C'})[lang],
+      code:$('code').value+'\n\n// Latest test result: '+JSON.stringify(last[p.id]||'tests not run yet'),
+      messages:h.slice(-10)})});
+    if(!r.ok){let m='Request failed ('+r.status+').';try{m=(await r.json()).error||m}catch{}throw new Error(m)}
+    const rd=r.body.getReader(),dec=new TextDecoder();
+    for(;;){const{done,value}=await rd.read();if(done)break;text+=dec.decode(value,{stream:true});wait.replaceChildren();fmt(wait,text);$('chat').scrollTop=$('chat').scrollHeight}
+    text+=dec.decode();
+    if(!text.trim())throw new Error('Empty reply. Please ask again.')
+  }catch(e){err=e.message||'Something went wrong.'}
+  if(!err)h.push({role:'assistant',content:text});else{h.pop();$('q').value=q}
+  saveChats();busy=false;$('ask').disabled=false;renderChat();
+  if(err)$('chat').append(el('div','m a','⚠ '+err+' Your question is back in the box. Press Ask to try again.'))};
+
+setTab(tab);
+fetch('/api/features').then(r=>r.json()).catch(()=>({})).then(j=>{cppOn=!!j.cpp;$('clang').options[2].textContent=cppOn?'C++':'C++ (practice mode)';return fetch('/api/problems')})
+  .then(r=>r.json()).then(d=>{P=d;
+  const m=location.hash.match(/^#c=([\w-]+)\.(\d)$/),i=m?P.findIndex(x=>x.id===m[1]):-1;if(i>=0){cur=i;chal={id:m[1],hints:+m[2]}}load()})
+  .catch(()=>{$('title').textContent='Could not load problems. Is the server running?'});
+</script></body></html>
